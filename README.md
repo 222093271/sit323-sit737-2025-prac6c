@@ -5,11 +5,11 @@
 ### Repository: https://github.com/222093271/sit323-sit737-2025-prac6c.git
 
 
-## 📝 Overview
+## Overview
 
-This task is a continuation of repository `sit323-sit737-2025-prac6p` (Task 6.1P), where the Node.js application were deployed using Kubernetes. In Task 6.1P, the student deployed a containerized Node.js web application into a local Kubernetes cluster using Docker and Kubernetes YAML configuration files. Task 6.2C takes the project one step further — by interacting directly with the running Kubernetes cluster and performing a controlled update of the application.
+This task is a continuation of repository `sit323-sit737-2025-prac6p` (Task 6.1P), where the Node.js application were deployed using Kubernetes. In Task 6.1P, we deployed a containerized Node.js web application into a local Kubernetes cluster using Docker and Kubernetes YAML configuration files. Task 6.2C takes the project one step further — by interacting directly with the running Kubernetes cluster and performing a controlled update of the application.
 
-The aim of this task is to help the student explore **how Kubernetes clusters can be interacted with using the command-line interface (kubectl)** and how developers can **update running applications in a seamless, structured way**.
+The aim of this task is to help us explore **how Kubernetes clusters can be interacted with using the command-line interface (kubectl)** and how developers can **update running applications in a seamless, structured way**.
 
 This task is divided into two main parts:
 
@@ -21,7 +21,7 @@ This documentation also includes all the necessary steps performed in **Task 6.1
 
 
 
-## 🛠️ Tools and Technologies Used
+## Tools and Technologies Used
 
 - **Node.js** – JavaScript runtime used to build the web application.
 - **Express.js** – Backend framework used for serving the static web content.
@@ -35,13 +35,13 @@ This documentation also includes all the necessary steps performed in **Task 6.1
 
 
 
-## 🧱 Task 6.1P Summary and Foundation Setup
+## Task 6.1P Summary and Foundation Setup
 
-Before starting Task 6.2C, the foundation for the application was built in **Task 6.1P**. In that task, the student developed a simple **Node.js + Express.js** application that served static content from a `public/` folder.
+Before starting Task 6.2C, the foundation for the application was built in **Task 6.1P**. In that task, we developed a simple **Node.js + Express.js** application that served static content from a `public/` folder.
 
 The application was containerized using Docker. A `Dockerfile` was created to define the build process, including copying files, installing dependencies, and exposing port 3000. A `docker-compose.yml` file was also added to help run the application locally with automated health checks.
 
-Once the Docker image was verified to work locally, the student then created the necessary **Kubernetes configuration files**:
+Once the Docker image was verified to work locally, it then created the necessary **Kubernetes configuration files**:
 - `deployment.yaml` – Described how the application should be deployed (number of pods, container settings, image name).
 - `service.yaml` – Exposed the application using a Kubernetes `NodePort` service to make it accessible via the browser.
 
@@ -122,7 +122,7 @@ This verification step ensures that Kubernetes is ready to handle new deployment
 
 Once the Kubernetes environment was verified and the deployment was successfully applied, the next step involved **interacting with the application** that was running inside the Kubernetes cluster.
 
-Kubernetes pods do not expose their applications to the host machine by default. Therefore, in order to test and access the deployed web application in a browser, the student used the `kubectl port-forward` command.
+Kubernetes pods do not expose their applications to the host machine by default. Therefore, in order to test and access the deployed web application in a browser, it used the `kubectl port-forward` command.
 
 ### 3.1 Verifying the Running Pods
 
@@ -153,7 +153,7 @@ This command mapped local port 8080 to the pod's internal port 3000. Once active
 
 After forwarding was active, the application could be accessed using a web browser at: http://localhost:8080 
 
-This allowed the student to test the deployed app directly, without needing an external IP or load balancer setup.
+This allowed us to test the deployed app directly, without needing an external IP or load balancer setup.
 
 ![Web Application on port 8080](Screenshots/image4.png)
 This step confirmed that the application was correctly deployed, running, and reachable using Kubernetes interaction commands.
@@ -378,8 +378,8 @@ The complete project, including all updated code, YAML configs, and documentatio
 
 This project provided a hands-on, end-to-end experience in building, containerizing, deploying, and interacting with a cloud-native application using modern DevOps tools. Task 6.1P introduced the foundational concepts of containerization with Docker, where a simple Node.js and Express application was created, tested locally using Docker Compose, and deployed into a Kubernetes cluster. The experience of writing Dockerfiles, composing containers, and verifying container health helped in understanding how microservices operate in isolated environments.
 
-In Task 6.2C, the learning advanced further by engaging directly with the Kubernetes ecosystem using `kubectl`. Students explored how to verify running pods and services, use port-forwarding to access internal applications, and perform seamless updates to the deployed application. Version-controlled image tagging (`v2`) and rolling updates through Kubernetes deployments demonstrated real-world continuous deployment workflows.
+In Task 6.2C, the learning advanced further by engaging directly with the Kubernetes ecosystem using `kubectl`. It explored how to verify running pods and services, use port-forwarding to access internal applications, and perform seamless updates to the deployed application. Version-controlled image tagging (`v2`) and rolling updates through Kubernetes deployments demonstrated real-world continuous deployment workflows.
 
 Additionally, exposure to Docker Scout for vulnerability scanning encouraged secure development practices and reinforced the importance of selecting lightweight and secure base images.
 
-Overall, this task bridged the gap between development and deployment, emphasising automation, repeatability, and scalability—key principles in cloud-native application development. These practical steps simulate real industry workflows and equip students with the confidence to build and manage microservices in containerized environments.
+Overall, this task bridged the gap between development and deployment, emphasising automation, repeatability, and scalability—key principles in cloud-native application development. These practical steps simulate real industry workflows and equip you with the confidence to build and manage microservices in containerized environments.

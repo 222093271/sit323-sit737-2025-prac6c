@@ -13,8 +13,15 @@ spec:
         app: themed-web
     spec:
       containers:
-      - name: themed-web
-        image: my-themed-web-app:latest
-        imagePullPolicy: Never
-        ports:
-        - containerPort: 3000
+        - name: themed-web
+          image: my-themed-web-app:v2
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+            requests:
+              memory: "64Mi"
+              cpu: "250m"

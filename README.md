@@ -1,375 +1,385 @@
-# SIT323/SIT737 Task 6.1: Kubernetes Cluster Deployment of a Containerized Node.js Application
+# SIT323/SIT737 – Task 6.2C: Interacting with Kubernetes
 
 ### Student Name: Inwang Ubong Marshal
 ### Student ID: 222093271
-### Repository: https://github.com/222093271/sit323-sit737-2025-prac6p.git
-
-## Overview
-
-The objective of this task is to design and deploy a simple containerized Node.js web application onto a Kubernetes cluster. Kubernetes, often referred to as "K8s," is an open-source platform that automates the deployment, scaling, and operation of application containers. In this task, we leverage Kubernetes as a container orchestration platform to run Node.js application efficiently and reliably.
-
-To begin with, we utilise an existing Node.js application developed in a previous task (Task 5.1P), which serves static files using Express.js. This application is then containerized using Docker and built into a Docker image named my-themed-web-app. We ensure that the container is healthy and ready to serve traffic by integrating health checks in the docker-compose.yml configuration. After testing the container locally, we proceed to set up a local Kubernetes cluster using Docker Desktop, enabling Kubernetes functionality for development purposes.
-
-Subsequently, we write Kubernetes deployment and service configuration files (deployment.yaml and service.yaml) to define how the containerized application should be deployed and accessed. Finally, we push all project files, including source code, Dockerfiles, Kubernetes YAML files, and documentation, to a GitHub repository for evaluation.
-
-![Node.js Web Application](Screenshots/image.png)
+### Repository: https://github.com/222093271/sit323-sit737-2025-prac6c.git
 
 
-## Project Setup & Prerequisites
+## 📝 Overview
 
-Before beginning the Kubernetes deployment, it was essential to ensure that local development environment was fully prepared with all the required tools. Since this task builds upon the work completed in Task 5.1P, we already had the foundational elements in place, such as the `application.js`, a working `Dockerfile`, and the basic folder structure for the Node.js application. The following tools were used to complete this task, each playing a vital role in the deployment process.
+This task is a continuation of repository `sit323-sit737-2025-prac6p` (Task 6.1P), where the Node.js application were deployed using Kubernetes. In Task 6.1P, the student deployed a containerized Node.js web application into a local Kubernetes cluster using Docker and Kubernetes YAML configuration files. Task 6.2C takes the project one step further — by interacting directly with the running Kubernetes cluster and performing a controlled update of the application.
 
+The aim of this task is to help the student explore **how Kubernetes clusters can be interacted with using the command-line interface (kubectl)** and how developers can **update running applications in a seamless, structured way**.
 
-### Visual Studio Code (VS Code)
+This task is divided into two main parts:
 
-We opened the project directory (sit323-sit737-2025-prac6p) in VS Code and used the integrated terminal to execute all Git, Docker, and Kubernetes commands.
+- **Part I**: It verifies that the application is running correctly using `kubectl get pods` and `kubectl get services`. Then, the application is accessed locally by forwarding a port from the Kubernetes pod to the host machine using `kubectl port-forward`.
 
+- **Part II**: It updates the application content (frontend and backend), builds a new Docker image tagged with a version, and updates the Kubernetes deployment to use the new image. This step demonstrates how Kubernetes can handle rolling updates and how developers can deploy new versions of applications without downtime.
 
-### 🐳 Docker
-
-Docker is a platform that allows developers to package applications into containers — lightweight, standalone, and executable units that include everything needed to run a piece of software. In Task 5.1P, we already built a Docker image for the Node.js application using the provided `Dockerfile`. This image was named `my-themed-web-app`.
-Docker was also used to run and test the application locally before deploying it to Kubernetes. This allowed us to ensure that the application was functioning correctly inside a container environment.
-We used `Docker Desktop`, which also provides a graphical interface to manage containers and settings. Importantly, Docker Desktop includes a built-in Kubernetes engine, which we enabled to simulate a local Kubernetes cluster.
+This documentation also includes all the necessary steps performed in **Task 6.1P**, since it forms the foundation of this interaction. Together, Task 6.1P and Task 6.2C reflect a complete end-to-end lifecycle: **develop → containerize → deploy → interact → update** — aligned with real-world DevOps workflows.
 
 
-### ☸️ Kubernetes
 
-Kubernetes is a container orchestration platform that automates the deployment, scaling, and management of containerized applications. Instead of manually running and managing individual containers (as we would with Docker alone), Kubernetes allows us to define the desired state of the application and then manages it automatically — handling container creation, networking, load balancing, and fault recovery.
+## 🛠️ Tools and Technologies Used
 
-In this project, Kubernetes was used to:
-*	Run multiple instances (pods) of the Node.js container.
-*	Automatically restart failed containers.
-*	Expose the application to external traffic using a Kubernetes Service.
-
-We deployed the application using two main Kubernetes resources:
-*	A Deployment, which describes how many container replicas should run and how to manage them.
-*	A Service, which exposes the deployment to allow users to access the app from a browser.
-
-### 🔧 kubectl – The Kubernetes CLI
-
-`kubectl` is the command-line interface for interacting with Kubernetes clusters. It is used to apply configuration files, inspect running services, view logs, and manage the entire Kubernetes environment from the terminal.
-
-We used kubectl to:
-*	Apply the Kubernetes deployment and service configuration files (`deployment.yaml` and `service.yaml`)
-*	Check the status of pods and services (`kubectl get pods`, `kubectl get services`)
-*	Debug or troubleshoot issues during deployment
-
-When Docker Desktop is installed and Kubernetes is enabled, kubectl is automatically made available in your system’s PATH, so no separate installation is needed.
-
-### Project Structure Recap (Up to Task 5.1P)
-At this stage, the project folder contained the following:
- 
-![Project Setup Recap](Screenshots/image1.png)
-
-*	application.js: Node.js Express server serving static files from the /public directory.
-*	Dockerfile: Defines how the app is built into a Docker image (my-themed-web-app).
-*	docker-compose.yml: Defines service configuration and health checks (optional for this task).
-*	public/index.html: A simple HTML page served by the app.
-*	package.json: Holds metadata and dependencies for the Node.js app.
-
-This formed the base of the project, and we built upon it by integrating Kubernetes in the next stages.
+- **Node.js** – JavaScript runtime used to build the web application.
+- **Express.js** – Backend framework used for serving the static web content.
+- **Docker** – Containerization platform to package and run the application.
+- **Docker Compose** – Used in Task 6.1P for simplified local development and health checks.
+- **Kubernetes** – Container orchestration platform for deploying and managing the application.
+- **kubectl** – Command-line tool to interact with the Kubernetes cluster.
+- **Visual Studio Code (VS Code)** – Code editor used for development and configuration.
+- **Git & GitHub** – Version control and cloud repository for managing and submitting the project.
+- **Docker Desktop** – Provides local Kubernetes cluster and Docker engine for container operations.
 
 
-## Verifying Environment Setup
 
-To ensure that the system is ready for the task, we verified the installation of all essential tools via the terminal. These tools include:
+## 🧱 Task 6.1P Summary and Foundation Setup
 
-![Environment Setup Verification](Screenshots/image2.png)
+Before starting Task 6.2C, the foundation for the application was built in **Task 6.1P**. In that task, the student developed a simple **Node.js + Express.js** application that served static content from a `public/` folder.
 
-This screenshot confirms that all essential tools are correctly installed, including Node.js, npm, Docker, Git, and kubectl. These versions validate a fully functional development environment required for building, containerizing, and deploying the application to Kubernetes.
+The application was containerized using Docker. A `Dockerfile` was created to define the build process, including copying files, installing dependencies, and exposing port 3000. A `docker-compose.yml` file was also added to help run the application locally with automated health checks.
+
+Once the Docker image was verified to work locally, the student then created the necessary **Kubernetes configuration files**:
+- `deployment.yaml` – Described how the application should be deployed (number of pods, container settings, image name).
+- `service.yaml` – Exposed the application using a Kubernetes `NodePort` service to make it accessible via the browser.
+
+The application was deployed to a **local Kubernetes cluster** enabled via Docker Desktop, and was successfully accessed at `http://localhost:30080`.
+
+This working setup from Task 6.1P was used as the **starting point** for Task 6.2C. The existing codebase was cloned and reused to interact further with Kubernetes and perform a versioned application update.
 
 
-## 🐳 Building and Testing the Docker Image Locally
 
-Before deploying the application to a Kubernetes cluster, it is essential to ensure that the application works correctly inside a Docker container. This acts as a sanity check — verifying that the Dockerfile builds properly, dependencies install correctly, and the application serves content as expected.
+## Step 1: Setting Up Your Project
 
-We already had the Dockerfile written during Task 5.1P, which looks like this:
-```
-FROM node:18
+To begin Task 6.2C, we reused the completed project from Task 6.1P. Rather than starting from scratch, the existing codebase was **cloned into a new folder** and version-controlled separately to avoid modifying the original repository.
 
-WORKDIR /app
+This ensures a clean structure while allowing changes specific to Task 6.2C.
 
-COPY package*.json ./
-RUN npm install
+### 1.1 Clone Task 6.1P Repo Locally
 
-COPY . .
-
-EXPOSE 3000
-
-CMD ["node", "application.js"]
-```
-
-This file defines how the Docker image is built:
-*	FROM node:18: Uses an official Node.js 18 base image.
-*	WORKDIR /app: Sets the working directory inside the container.
-*	COPY package*.json ./ and RUN npm install: Installs the Node.js dependencies.
-*	COPY . .: Copies the rest of the project files.
-*	EXPOSE 3000: Opens port 3000, which the app uses.
-*	CMD: Tells Docker how to run the app.
-
-### 🔨 Docker Build Command
-To create the image, we used the following command in the terminal:
-```
-docker build -t my-themed-web-app .
-```
-This command tells Docker to:
-*	Build the image in the current directory (.)
-*	Tag the resulting image as my-themed-web-app
-
-The output confirms that Docker successfully:
-*	Downloaded the base image
-*	Installed the dependencies (npm install)
-*	Copied the necessary files
-*	Created and named the image
-
-![Build Docker Image](Screenshots/image3.png)
-
-This screenshot shows that the image my-themed-web-app was built successfully, confirming that the Dockerfile is valid and the application dependencies are correctly installed.
-
-### ✅ Verifying Docker Image Locally
-Although not shown in the screenshot, we also tested the image using the following command to confirm that the application runs as expected:
+The following command was used to clone the 6.1P repo into a new folder named `sit323-sit737-2025-prac6c`:
 
 ```
-docker run -p 3000:3000 my-themed-web-app
+git clone https://github.com/222093271/sit323-sit737-2025-prac6p.git sit323-sit737-2025-prac6c 
+cd sit323-sit737-2025-prac6c
 ```
 
-This maps container port 3000 to host port 3000, allowing us to view the app at: 👉 http://localhost:3000 
+![Cloning Repo of Task 6.1P](Screenshots/image.png)
 
-![Running Web Application](Screenshots/image4.png)
+Open the folder in VS Code:
+```
+code .
+```
 
-At this point, the app is displaying the contents of the `public/index.html` file with the `public/style.css` file through the Express static file server.
-This step is crucial because if the image doesn't work locally, it will most certainly fail inside Kubernetes. It was verified, now ready to proceed to the Kubernetes deployment phase.
+### 1.2 Initialise a Fresh Git Repo for 6.2C
+
+To prepare the new folder for Task 6.2C and prevent pushing to the old repository, Git was reset and reinitialised:
+
+```
+Remove-Item -Recurse -Force .git         # (deletes Git history)
+git init
+git add .
+git commit -m "Initial commit for Task 6.2C"
+```
+
+With this, the project was successfully set up and ready to begin Task 6.2C, building upon the solid foundation from Task 6.1P.
 
 
-## ☸️ Creating Kubernetes Deployment and Service Configuration Files
 
-Once we confirmed the Docker image was working as expected, we proceeded to deploy it inside a Kubernetes cluster. Kubernetes allows us to automate the management of containers by defining Deployment and Service objects using YAML configuration files. These files tell Kubernetes how to manage the application and how users can access it.
+## Step 2: Verifying the Kubernetes Environment
+
+Before interacting with or updating the deployed application, it is essential to ensure that the local Kubernetes environment is running properly. Docker Desktop is used in this project to provide a single-node Kubernetes cluster for local development.
 
 ### Enabling Kubernetes in Docker Desktop
 
-We used Docker Desktop as the Kubernetes engine, which supports a single-node local cluster. To enable Kubernetes, we navigated to Docker Desktop settings and toggled the “Enable Kubernetes” option.
-This created a **kubeadm single-node cluster** named `docker-desktop`, which runs locally and is fully capable of simulating a production-grade Kubernetes environment for testing and development.
+1. Open **Docker Desktop**
+2. Navigate to:  
+   `Settings` → `Kubernetes`
+3. Ensure the **"Enable Kubernetes"** checkbox is ticked.
+4. Wait until the status changes to: **Kubernetes is running**
 
-![Enabling Kubernetes in Docker Desktop](Screenshots/image5.png)
+It may take a minute or two for Kubernetes to start fully.
 
-This confirms that the local Kubernetes environment is up and running successfully.
+### Testing the Kubernetes Cluster
 
-### 📁 Creating Deployment Configuration – `deployment.yaml`
-The `deployment.yaml` file is used to instruct Kubernetes how to deploy the application, how many replicas (instances) we want, and what image to use.
-
-Here’s the file structure:
-
-```
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: themed-web-deployment
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: themed-web
-  template:
-    metadata:
-      labels:
-        app: themed-web
-    spec:
-      containers:
-      - name: themed-web
-        image: my-themed-web-app:latest
-        imagePullPolicy: Never
-        ports:
-        - containerPort: 3000
-```
-
-**Key Concepts**:
-* `replicas: 2`: Runs two instances of the app for load balancing and fault tolerance.
-* `image: my-themed-web-app:latest`: Uses the local image built earlier.
-* `imagePullPolicy: Never`: Ensures Kubernetes uses the local Docker image instead of trying to pull from Docker Hub.
-* `selector` and `labels`: Used to associate the deployment with the corresponding service.
-
-![Deployment.yaml](Screenshots/image6.png)
-
-
-### 🌐 Creating Service Configuration – `service.yaml`
-While deployments manage the lifecycle of containers, services expose them to external users. We created a `service.yaml` file to define how users can access the app through a browser.
-
-Here’s the file:
+Open a terminal inside **VS Code** and run the following commands:
 
 ```
-apiVersion: v1
-kind: Service
-metadata:
-  name: themed-web-service
-spec:
-  type: NodePort
-  selector:
-    app: themed-web
-  ports:
-    - protocol: TCP
-      port: 3000
-      targetPort: 3000
-      nodePort: 30080
+kubectl get pods
+kubectl get services
 ```
+ 
+![Kubectl get pods](Screenshots/image1.png)
+![kubectl get services](Screenshots/image2.png)
 
-**Key Concepts**:
-* `type: NodePort`: Opens a port on the host (your machine) and forwards traffic to the app.
-* `port` and `targetPort`: Handle internal routing of requests.
-* `nodePort: 30080`: Exposes the app to `localhost:30080`, making it accessible via a browser.
-
-![Server.yaml File](Screenshots/image7.png)
+This verification step ensures that Kubernetes is ready to handle new deployments, port-forwarding, and application updates as required in Task 6.2C.
 
 
-### 🩺 Reference to Previous Health Check with Docker Compose
-While not required in Kubernetes for this task, we previously used a `docker-compose.yml` file to define a health check. This checks if the application is running correctly on http://localhost:3000 using `curl`. The same principles could be applied using Kubernetes readiness and liveness probes in advanced scenarios.
 
-![Docker compose Health Checkup](Screenshots/image8.png)
+## Step 3: Interacting with the Deployed Application (Part I)
 
+Once the Kubernetes environment was verified and the deployment was successfully applied, the next step involved **interacting with the application** that was running inside the Kubernetes cluster.
 
-### ✅ Application Output Confirmation
+Kubernetes pods do not expose their applications to the host machine by default. Therefore, in order to test and access the deployed web application in a browser, the student used the `kubectl port-forward` command.
 
-To ensure everything worked correctly, we ran the container and verified that the application was serving content by looking at the logs and Docker UI.
+### 3.1 Verifying the Running Pods
 
-* The console output displayed: App running at http://localhost:3000 — confirming that the app started successfully inside the container.
+To identify which pods were running, the following command was executed:
 
-![alt text](Screenshots/image9.png)
-
-![alt text](Screenshots/image10.png)
-
-These outputs helped verify:
-* The application is healthy.
-* It is serving requests properly.
-* No internal server or build errors occurred.
-
-With these YAML files created and validated, we were now ready to apply them using kubectl, which we’ll cover in the next section.
-
-
-## 🚀 Deploying to Kubernetes and Accessing the Application
-
-After preparing the Kubernetes configuration files (`deployment.yaml` and `service.yaml`), we moved on to deploying the application into the Kubernetes cluster. This phase involved applying the configuration using kubectl, verifying that the pods and services were running, and finally testing the application in the browser.
-
-### 🔄 Applying Kubernetes Configurations
-Using the kubectl command-line tool, we executed the following commands in the terminal to apply the deployment and service definitions:
-
-```
-kubectl apply -f deployment.yaml
-kubectl apply -f service.yaml
-```
-
-These commands instructed Kubernetes to:
-*	Start two pod replicas of the Node.js application, as defined in the deployment.
-*	Expose the application on NodePort 30080, making it accessible via http://localhost:30080. 
-
-
-### Verifying Running Pods
-To check if the application pods were successfully created and running, we used:
 ```
 kubectl get pods
 ```
-This command lists all active pods in the current namespace.
 
-![kubectl get pods](Screenshots/image11.png)
+![kubectl get pods](Screenshots/image1.png)
 
-This confirms that Kubernetes has successfully created two replicas of the application, both marked as Running, indicating that the containerized app is functioning as expected within the cluster.
+This command listed all active pods within the default namespace. The output showed the pods created from the Kubernetes deployment (themed-web-deployment) and an earlier pod from Task 6.1P:
+ 
 
+### 3.2 Forwarding Local Port to Pod Port
+Since the application inside the container listens on port 3000, and the host machine cannot access container ports directly, a port-forwarding command was used to expose it temporarily:
 
-### 🌐 Verifying Kubernetes Service
-
-Next, we verified that the application was exposed properly by running:
 ```
-kubectl get services
-```
-This command lists all the Kubernetes services and their ports.
-
-![kubectl get services](Screenshots/image12.png)
-
-The NodePort configuration exposes internal port `3000` to external port `30080`, allowing us to access the app from the browser via http://localhost:30080.
-
-
-### ✅ Accessing the Application in Browser
-
-After successful deployment and confirmation of pod and service status, we opened a browser and visited: http://localhost:30080 
-
-![Application in Browser](Screenshots/image13.png)
-
-This final confirmation proves that the entire deployment workflow — from Docker build to Kubernetes deployment and service exposure — was executed successfully, and the application is accessible externally as expected.
-
-
-
-## 🔒 Improving Docker Image Security: Vulnerability Scanning & Base Image Optimisation
-
-Security is a critical aspect of containerized applications, especially when deploying them to cloud-native environments like Kubernetes. As part of this task, we evaluated the security of the Docker image using Docker Scout, which scans image layers for known vulnerabilities.
-
-
-### Initial Image Scan (Using node:18)
-
-Originally, the Dockerfile was based on the node:18 image:
-```
-FROM node:18
+kubectl port-forward pod/themed-web-deployment-6d58d886-wgvhj 8080:3000
 ```
 
-While functional, a scan via Docker Scout revealed 4 high-severity vulnerabilities. High vulnerabilities can pose serious risks, especially when containers are deployed in production or exposed to the internet.
+This command mapped local port 8080 to the pod's internal port 3000. Once active, the terminal confirmed that traffic was being routed:
 
-![Docker image in Docker Dektop](Screenshots/image14.png)
-
-This image had several vulnerable packages coming from the base OS layer (Debian-based) that node:18 depends on.
+![kubectl forward port](Screenshots/image3.png)
 
 
-### Fixing Vulnerabilities by Updating the Base Image
+### 3.3 Accessing the Application in the Browser
 
-To resolve this, we switched to a more lightweight and secure version:
+After forwarding was active, the application could be accessed using a web browser at: http://localhost:8080 
+
+This allowed the student to test the deployed app directly, without needing an external IP or load balancer setup.
+
+![Web Application on port 8080](Screenshots/image4.png)
+This step confirmed that the application was correctly deployed, running, and reachable using Kubernetes interaction commands.
+
+ 
+## Step 4: Updating the Application (Part II)
+
+After verifying that the original version of the application was successfully deployed and accessible, the next objective in Task 6.2C was to **modify the application content**, build a new Docker image with a version tag (`v2`), and then redeploy it using Kubernetes.
+
+This step demonstrates a common DevOps workflow where an application is updated and pushed live without downtime or major changes in infrastructure.
+
+
+### 4.1 Editing the Application Code
+
+To visually reflect that an update has been made, both the frontend and the backend output were modified.
+
+#### A. Update in `public/index.html` and `public/style.css`
+
+The file `public/index.html` was updated to include a new heading that clearly shows this is **version 2 of the app**. In css file `public/style.css`, the colour of border and button was updated to different from earlier. 
+
 ```
-FROM node:23-slim
+<h1>Hello from Dockerized Web App – v2 🚀</h1>
 ```
 
-This change uses a slimmer, more secure variant of Node.js version 23, which contains fewer pre-installed packages and therefore reduces the attack surface.
+This change allows users to instantly recognise the version of the app when opened in the browser.
 
-After rebuilding the image and scanning it again using Docker Scout, the results showed:
-*	All high-severity vulnerabilities were resolved
-*	Only low-severity CVEs remained, mostly from base Debian packages
-*	These are not critical and generally acceptable in development/testing environments
+#### B. Update in application.js
 
-![Low Vulnerabilities Docker Image](Screenshots/image15.png)
+The console output (which is visible in the container logs) was also updated for versioning clarity:
 
-This step significantly improved the security of the Docker image with minimal effort, and it's a great example of proactive DevSecOps.
-
-
-### 🧱 Image Layer Analysis
-
-Docker Scout also provided detailed insights into each image layer. As seen in the breakdown:
-*	The Node version, npm install, and package copying layers were correctly recognised.
-*	No additional unexpected packages or bloated files were introduced during the build.
-*	The resulting image size remained efficient (~350MB), and ready for deployment.
-
-By simply switching to a more modern and minimal base image (node:23-slim), we improved the image security and reliability without sacrificing performance or functionality.
-
-
-
-## Pushing the Project to GitHub & Final Submission Instructions
-
-To submit the task, all project files — including source code, `Dockerfile`, `docker-compose.yml`, Kubernetes YAMLs, and documentation — were pushed to a GitHub repository.
-
-**Git Commands Used**:
 ```
-git init
-git add .
-git commit -m "Initial commit for SIT737 Kubernetes deployment"
-git remote add origin https://github.com/222093271/sit323-sit737-2025-prac6p.git 
-git pull origin main --allow-unrelated-histories   # if repo already had files
+console.log(`🌐 App v2 running at http://localhost:${port}`);
+```
+
+This message gets logged in the terminal or Docker container logs, making it easier to confirm that the updated version is running.
+
+These code changes laid the groundwork for the next step: rebuilding the Docker image with a new version tag (v2) and updating the Kubernetes deployment to reflect this change.
+
+
+
+## 🐳 Step 5: Building the Updated Docker Image (v2)
+
+Once the application code had been updated to reflect **version 2 (v2)**, the next step was to build a new Docker image that packages this updated version. This updated image would then be used in the Kubernetes deployment.
+
+This process mimics real-world CI/CD pipelines, where every code change is followed by a new build, version tagging, and deployment.
+
+### 5.1 Rebuilding the Docker Image with a Version Tag
+
+The Docker image was rebuilt using the same `Dockerfile` used in Task 6.1P, but this time the image was explicitly tagged as version **v2**. This helps distinguish it from previous builds and allows Kubernetes to pull the updated image without confusion.
+
+The following command was used to build the Docker image:
+
+```
+docker build -t my-themed-web-app:v2 .
+```
+
+![New Docker Image](Screenshots/image5.png)
+
+#### Tag the Image as latest
+
+Although tagging the image as v2 is recommended for clarity and control, Docker images can also be tagged as latest so Kubernetes defaults to the most recent version:
+
+```
+docker tag my-themed-web-app:v2 my-themed-web-app:latest-version
+```
+
+This command doesn’t rebuild the image — it simply creates an additional tag (latest) pointing to the same image ID.
+
+### 5.2 Confirming the Docker Image Was Created
+
+To verify that the image was successfully created and tagged, the following command was used:
+
+```
+docker images
+```
+
+The expected output includes an entry like the following:
+
+![Docker Images](Screenshots/image6.png)
+ 
+This confirms that the updated application has been successfully containerized and is ready to be deployed to the Kubernetes cluster. 
+Tagging images by version (e.g., v2) is a best practice for deployment and rollback safety. It ensures that Kubernetes doesn’t reuse a cached or outdated image when applying new changes.
+
+## ☸️ Step 6: Updating the Kubernetes Deployment
+
+To deploy the updated version of the application, the `deployment.yaml` file was modified to reference the newly built Docker image tagged as `v2`. Specifically, the `image` field under the `containers` section was updated:
+
+```
+  containers:
+        - name: themed-web
+          image: my-themed-web-app:v2
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+```
+
+The imagePullPolicy: Never ensures Kubernetes uses the locally built image instead of trying to pull it from an external registry, which is ideal for local development.
+
+To apply the updated deployment, the following commands were used:
+
+```
+kubectl apply -f deployment.yaml
+kubectl rollout status deployment themed-web-deployment
+```
+
+![Deployment Successfully Rolled Out](Screenshots/image7.png)
+
+This triggers a rolling update where Kubernetes gracefully stops the old pods and starts new ones with the updated image (v2). The rollout status command confirms that the update completes successfully without downtime.
+
+
+
+## Step 7: Verifying the Updated Application
+
+After applying the updated deployment configuration with the `v2` image, the next step was to verify that the new version of the application was correctly running inside the Kubernetes cluster.
+
+### 7.1 Get the New Pod Name
+
+To begin, the following command was used to list all running pods:
+
+```
+kubectl get pods
+```
+
+![After kubectl pods](Screenshots/image8.png)
+
+The output confirmed that two new pods were created under the deployment themed-web-deployment, and both were in the Running state, indicating that the rollout of the updated image was successful.
+
+### 7.2 Forward Local Port to Pod
+
+To access the updated app, port forwarding was used again:
+
+```
+kubectl port-forward pod/themed-web-deployment-6d58d886-x9wts 8080:3000
+```
+
+This maps local port 8080 to the pod's container port 3000. Once running, the application could be accessed at: http://localhost:8080 
+
+![Port running successfully](Screenshots/image9.png)
+
+The image confirms that traffic was being forwarded successfully, allowing the user to access the updated UI and log output.
+
+The updated web interface and container logs display version 2, proving that the app update and redeployment process using Kubernetes was successful.
+
+
+
+## Docker Image Validation and Application Output
+
+After updating the application to version 2 and deploying it via Kubernetes, a series of validations were performed to ensure the application was running as expected and the Docker image was correctly configured and secure. The following images provide visual proof of the successful outcome.
+
+### 1. App v2 Displayed in Browser (Port 8080)
+
+![App v2 UI](Screenshots/image10.png)
+ 
+This screenshot shows the updated version of the web application running at `http://localhost:8080` after forwarding local traffic to the Kubernetes pod. The message clearly displays:
+> **"Hello from Dockerized Web App – v2 🚀"**
+
+This confirms that the version update was successful and that the deployed container is indeed running the newly modified `index.html`.
+
+### 2. Docker Image Tags Showing v2 and latest-version
+
+![Docker Images](Screenshots/image11.png)
+ 
+
+This screenshot captures the **Docker Desktop > Images** tab, listing all local Docker images. It shows:
+
+- `my-themed-web-app:v2` — the newly built image from the updated app.
+- `my-themed-web-app:latest-version` — an alternate tag pointing to the same image ID.
+- A previous version (`v1`) for comparison.
+
+This verifies version tracking and helps in managing updates between app versions.
+
+### 3. Image Vulnerability Scan via Docker Scout
+
+![Docker Scout Analysis](Screenshots/image12.png)
+
+Using Docker Scout, the image `my-themed-web-app:latest-version` was scanned for vulnerabilities. The base image used is `node:23-bookworm-slim`, which significantly reduced the number of vulnerabilities compared to older base versions.
+
+- All high-severity vulnerabilities were eliminated.
+- Only low-severity CVEs remain, primarily from system-level dependencies that do not impact the app’s behavior.
+
+This ensures the image is production-safe in controlled environments and reflects secure image-building practices.
+
+> These images serve as visual proof that the application was successfully updated, secured, deployed, and accessed — fulfilling the objectives of both Task 6.1P and Task 6.2C.
+
+
+## Step 8: Pushing to a New GitHub Repository
+
+After completing the application updates, Docker rebuild, and Kubernetes redeployment, the final step was to publish the project to a new GitHub repository for submission and sharing.
+
+### 8.1 Create a New GitHub Repository
+
+A new GitHub repository named: `sit323-sit737-2025-prac6c`
+
+> ⚠️ Important: No README, .gitignore, or license was added during creation. This ensures the local repository can be pushed without conflicts.
+
+
+### 8.2 Connect Local Folder to GitHub Repo
+
+To push the project, the local repository was connected to GitHub using the following commands:
+
+```
+git remote add origin https://github.com/222093271/sit323-sit737-2025-prac6c.git 
+git branch -M main
 git push -u origin main
 ```
 
+*	`git remote add origin` connects the local folder to the GitHub repository.
+*	`git branch -M main` sets the local branch name to main.
+*	`git push -u origin main` pushes all project files to GitHub and sets up future tracking.
 
-## Conclusion & Learning 
-
-Completing this task provided a hands-on, end-to-end experience in deploying a containerized web application using Kubernetes — a vital skill in modern cloud-native software development. The process began with a foundational Node.js application, which was containerized using Docker, tested locally, and eventually deployed to a Kubernetes cluster for orchestration and scalability.
-
-Enabling Kubernetes through Docker Desktop introduced us to single-node cluster management and highlighted the power of using YAML to declaratively define application infrastructure. Writing `deployment.yaml` and `service.yaml` deepened the understanding of Kubernetes objects such as pods, deployments, and NodePort services.
-
-Security was also emphasised by scanning the Docker image with Docker Scout. By replacing a vulnerable base image (`node:18`) with a more secure one (`node:23-slim`), we learned how small decisions can significantly impact the safety and reliability of applications.
-
-Finally, pushing the project to GitHub reinforced version control, collaboration, and transparency — all crucial aspects in professional DevOps workflows.
-
-This project not only cemented the technical skills in containerization and orchestration but also emphasised the importance of automation, configuration, and security in deploying scalable cloud-native applications.
+The complete project, including all updated code, YAML configs, and documentation, is now hosted and ready for assessment or collaboration.
 
 
+## Conclusion and Learning
+
+This project provided a hands-on, end-to-end experience in building, containerizing, deploying, and interacting with a cloud-native application using modern DevOps tools. Task 6.1P introduced the foundational concepts of containerization with Docker, where a simple Node.js and Express application was created, tested locally using Docker Compose, and deployed into a Kubernetes cluster. The experience of writing Dockerfiles, composing containers, and verifying container health helped in understanding how microservices operate in isolated environments.
+
+In Task 6.2C, the learning advanced further by engaging directly with the Kubernetes ecosystem using `kubectl`. Students explored how to verify running pods and services, use port-forwarding to access internal applications, and perform seamless updates to the deployed application. Version-controlled image tagging (`v2`) and rolling updates through Kubernetes deployments demonstrated real-world continuous deployment workflows.
+
+Additionally, exposure to Docker Scout for vulnerability scanning encouraged secure development practices and reinforced the importance of selecting lightweight and secure base images.
+
+Overall, this task bridged the gap between development and deployment, emphasising automation, repeatability, and scalability—key principles in cloud-native application development. These practical steps simulate real industry workflows and equip students with the confidence to build and manage microservices in containerized environments.
